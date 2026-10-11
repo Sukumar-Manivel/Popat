@@ -1,0 +1,342 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Popat Analyst Console</title>
+<style>
+:root{
+  --bg:#f4f6f9; --panel:#ffffff; --panel2:#f3f5f8; --text:#0f1b2d; --muted:#5b677a; --line:#e2e7ee;
+  --accent:#0b5cad; --accentsoft:#e7f0fa; --side:#0f2440; --sidetext:#c7d3e3; --sideactive:#1d3a60;
+  --crit:#b42318; --high:#c4570c; --med:#a16207; --low:#15803d;
+  --critbg:#fdecea; --highbg:#fdf0e5; --medbg:#fdf6e0; --lowbg:#e7f6ec; --banner:#eaf2fb; --bannertext:#0b4a8a;
+  --shadow:0 1px 2px rgba(15,27,45,.05),0 1px 3px rgba(15,27,45,.06);
+}
+:root[data-theme="dark"]{
+  --bg:#0f141b; --panel:#161d26; --panel2:#1c2531; --text:#e6ebf2; --muted:#98a3b3; --line:#283241;
+  --accent:#5aa2ef; --accentsoft:#1a2d44; --side:#0b1017; --sidetext:#98a3b3; --sideactive:#1c2a3c;
+  --crit:#f47067; --high:#f0954a; --med:#e3b341; --low:#57c785;
+  --critbg:#3b1d1b; --highbg:#3a2615; --medbg:#352b10; --lowbg:#14301f; --banner:#132840; --bannertext:#9cc7f2;
+  --shadow:none;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:14px/1.45 "Inter","Segoe UI",system-ui,-apple-system,Roboto,sans-serif;display:flex;min-height:100vh}
+.side{width:220px;flex-shrink:0;background:var(--side);color:var(--sidetext);display:flex;flex-direction:column;padding:18px 12px;position:sticky;top:0;height:100vh}
+.side .brand{color:#fff;padding:0 8px 22px}
+.side nav a{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:7px;color:var(--sidetext);text-decoration:none;font-size:13.5px;margin-bottom:2px}
+.side nav a.active{background:var(--sideactive);color:#fff;font-weight:600}
+.side nav a:hover{background:var(--sideactive)}
+.side nav .ic{width:16px;text-align:center;opacity:.85}
+.side .sect{font-size:11px;text-transform:uppercase;letter-spacing:.08em;opacity:.6;padding:16px 10px 6px}
+.side .foot{margin-top:auto;font-size:11.5px;opacity:.7;padding:0 10px}
+.shell{flex:1;min-width:0;display:flex;flex-direction:column}
+.banner{background:var(--banner);color:var(--bannertext);padding:7px 16px;font-size:12.5px;text-align:center;font-weight:600;border-bottom:1px solid var(--line)}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 28px;border-bottom:1px solid var(--line);background:var(--panel);flex-wrap:wrap}
+header h1{margin:0;font-size:18px;font-weight:700}
+header .crumb{color:var(--muted);font-size:12.5px}
+.hright{display:flex;align-items:center;gap:12px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:16px}
+.brand .logo{width:30px;height:30px;border-radius:8px;background:var(--accent);color:#fff;display:grid;place-items:center;font-size:15px}
+.brand small{display:block;font-weight:400;opacity:.7;font-size:11.5px}
+.window{color:var(--muted);font-size:13px;background:var(--panel2);border:1px solid var(--line);padding:6px 10px;border-radius:7px}
+.theme{border:1px solid var(--line);background:var(--panel);color:var(--text);border-radius:7px;padding:6px 10px;cursor:pointer;font:inherit;font-size:13px}
+.avatar{width:32px;height:32px;border-radius:50%;background:var(--accentsoft);color:var(--accent);display:grid;place-items:center;font-weight:700;font-size:12px}
+main{padding:22px 28px;max-width:1400px;width:100%;margin:0 auto}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px}
+.kpi{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px;box-shadow:var(--shadow);border-top:3px solid var(--accent)}
+.kpi.crit{border-top-color:var(--crit)}
+.kpi .label{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.04em}
+.kpi .value{font-size:28px;font-weight:700;margin-top:4px;font-variant-numeric:tabular-nums}
+.kpi .sub{color:var(--muted);font-size:12px}
+.grid{display:grid;grid-template-columns:1fr 360px;gap:14px;margin-bottom:18px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;box-shadow:var(--shadow)}
+.card h2{font-size:14px;margin:0 0 12px;font-weight:650}
+.dist{display:flex;flex-direction:column;gap:9px}
+.dist .row{display:grid;grid-template-columns:70px 1fr 36px;align-items:center;gap:10px;font-size:13px}
+.dist .bar{height:12px;border-radius:6px;background:var(--panel2);overflow:hidden}
+.dist .bar span{display:block;height:100%;border-radius:6px}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;align-items:center}
+input,select{background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:8px;padding:7px 10px;font:inherit}
+input{min-width:220px}
+table{width:100%;border-collapse:collapse}
+th{text-align:left;color:var(--muted);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.03em;padding:8px 10px;border-bottom:1px solid var(--line);cursor:pointer;user-select:none;white-space:nowrap}
+td{padding:10px;border-bottom:1px solid var(--line);vertical-align:middle}
+tbody tr{cursor:pointer}
+tbody tr:hover{background:var(--panel2)}
+tbody tr.sel{background:var(--panel2);box-shadow:inset 3px 0 0 var(--accent)}
+.score{font-weight:700;font-variant-numeric:tabular-nums;font-size:15px}
+.pill{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;font-weight:600}
+.Critical{color:var(--crit);background:var(--critbg)} .High{color:var(--high);background:var(--highbg)}
+.Medium{color:var(--med);background:var(--medbg)} .Low{color:var(--low);background:var(--lowbg)}
+.status{font-size:12px;color:var(--muted)}
+.muted{color:var(--muted)}
+.wrap{overflow-x:auto}
+/* detail */
+.detail{position:fixed;top:0;right:0;height:100%;width:min(520px,100%);background:var(--panel);border-left:1px solid var(--line);box-shadow:-8px 0 24px rgba(0,0,0,.15);transform:translateX(105%);transition:transform .22s ease;overflow-y:auto;z-index:10}
+.detail.open{transform:none}
+.detail .head{padding:18px 20px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.detail .body{padding:18px 20px;display:flex;flex-direction:column;gap:18px}
+.detail h3{margin:0;font-size:18px}
+.detail h4{margin:0 0 8px;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.close{background:none;border:1px solid var(--line);color:var(--text);border-radius:8px;width:32px;height:32px;cursor:pointer;font-size:16px}
+.factor{display:grid;grid-template-columns:150px 1fr 34px;gap:10px;align-items:center;font-size:13px;margin-bottom:7px}
+.factor .bar{height:9px;border-radius:5px;background:var(--panel2);overflow:hidden}
+.factor .bar span{display:block;height:100%;background:var(--accent);border-radius:5px}
+.evidence{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:8px}
+.evidence li{background:var(--panel2);border-radius:8px;padding:9px 11px;font-size:13px}
+.evidence li b{display:block;font-size:12px;color:var(--muted);font-weight:600}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+.btn{border:1px solid var(--line);background:var(--panel2);color:var(--text);border-radius:8px;padding:8px 12px;cursor:pointer;font:inherit;font-weight:600}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+textarea{width:100%;min-height:70px;background:var(--panel2);border:1px solid var(--line);color:var(--text);border-radius:8px;padding:8px;font:inherit;resize:vertical}
+.meta{display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:13px}
+.meta div span{display:block;color:var(--muted);font-size:12px}
+.privacy{font-size:12px;color:var(--muted);border:1px dashed var(--line);border-radius:8px;padding:8px 10px}
+footer{color:var(--muted);font-size:12px;text-align:center;padding:20px}
+th{background:var(--panel2)}
+@media (max-width:900px){.side{display:none}.kpis{grid-template-columns:repeat(2,1fr)}.grid{grid-template-columns:1fr}main{padding:16px}header{padding:12px 16px}input{min-width:0;flex:1}.hide-sm{display:none}}
+</style>
+</head>
+<body>
+<aside class="side">
+  <div class="brand"><div class="logo">P</div><div>Popat<small>Insider risk console</small></div></div>
+  <nav>
+    <a class="active" href="#"><span class="ic">▦</span>Overview</a>
+    <a href="#"><span class="ic">⚑</span>Cases</a>
+    <a href="#"><span class="ic">◉</span>Employees</a>
+    <a href="#"><span class="ic">⌁</span>AI activity</a>
+    <div class="sect">Configure</div>
+    <a href="#"><span class="ic">⚙</span>Detection policies</a>
+    <a href="#"><span class="ic">⛨</span>Privacy &amp; access</a>
+  </nav>
+  <div class="foot">Research prototype v0<br>Demo data only</div>
+</aside>
+<div class="shell">
+<div class="banner">DEMO: all employees, scores and events are randomly generated synthetic data. No real person or company is represented.</div>
+<header>
+  <div><div class="crumb">Popat / Overview</div><h1>AI-assisted exfiltration risk</h1></div>
+  <div class="hright">
+    <span class="window">Last 30 days · Model v0 (demo)</span>
+    <button class="theme" id="theme" aria-label="Toggle theme">◐ Dark</button>
+    <div class="avatar" title="Analyst">SA</div>
+  </div>
+</header>
+
+<main>
+  <section class="kpis" id="kpis"></section>
+
+  <section class="grid">
+    <div class="card">
+      <h2>Highest-risk employees · 30-day trend</h2>
+      <svg id="trend" viewBox="0 0 700 200" width="100%" height="200" role="img" aria-label="Risk trend of top employees"></svg>
+    </div>
+    <div class="card">
+      <h2>Risk distribution</h2>
+      <div class="dist" id="dist"></div>
+      <p class="muted" style="font-size:12px;margin:14px 0 0">Scores are risk estimates for human review, not verdicts.</p>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="toolbar">
+      <input id="q" placeholder="Search employee ID, team or role" aria-label="Search">
+      <select id="lvl" aria-label="Risk level"><option value="">All risk levels</option><option>Critical</option><option>High</option><option>Medium</option><option>Low</option></select>
+      <select id="team" aria-label="Team"><option value="">All teams</option></select>
+      <select id="st" aria-label="Status"><option value="">All statuses</option><option>New</option><option>Reviewing</option><option>Escalated</option><option>Cleared</option></select>
+      <span class="muted" id="count" style="margin-left:auto;font-size:13px"></span>
+    </div>
+    <div class="wrap">
+    <table>
+      <thead><tr>
+        <th data-k="id">Employee</th><th data-k="team" class="hide-sm">Team</th><th data-k="role" class="hide-sm">Role</th>
+        <th data-k="score">Risk ▾</th><th data-k="level">Level</th><th class="hide-sm">Top factor</th><th class="hide-sm">Trend</th><th data-k="status">Status</th>
+      </tr></thead>
+      <tbody id="rows"></tbody>
+    </table>
+    </div>
+    <div style="text-align:center;margin-top:12px"><button class="btn" id="more">Show all</button></div>
+  </section>
+</main>
+
+<aside class="detail" id="detail" aria-hidden="true"></aside>
+<footer>Popat · research prototype · demo data only</footer>
+</div>
+
+<script>
+// ---------- deterministic fake data ----------
+let seed = 20261011;
+function rnd(){ seed = (seed*1664525 + 1013904223) % 4294967296; return seed/4294967296; }
+function pick(a){ return a[Math.floor(rnd()*a.length)]; }
+
+const TEAMS = ["Payments","Platform","Mobile","Search","Data","Identity"];
+const ROLES = ["Backend developer","Frontend developer","Tech lead","New joiner","QA engineer","DevOps engineer","Contractor","Intern"];
+const FACTORS = ["Codebase coverage","Standalone detail","Out-of-scope activity","Drift from baseline","Timing context"];
+const MODULES = {Payments:["billing","ledger","refunds"],Platform:["scheduler","config","auth-core"],Mobile:["sync","offline-cache","ui-kit"],Search:["ranking","indexer","query-parser"],Data:["pipelines","warehouse","etl-jobs"],Identity:["sso","tokens","roles"]};
+
+function level(s){ return s>=80?"Critical":s>=60?"High":s>=35?"Medium":"Low"; }
+
+const employees = [];
+for(let i=0;i<64;i++){
+  const team = pick(TEAMS), role = pick(ROLES);
+  // most employees low risk; a few elevated
+  const r = rnd();
+  let base = r<0.70 ? 5+rnd()*28 : r<0.88 ? 35+rnd()*24 : r<0.96 ? 60+rnd()*19 : 80+rnd()*16;
+  const f = FACTORS.map(()=>Math.round(Math.min(100, Math.max(2, base + (rnd()-0.5)*40))));
+  // series of 30 days ending at base
+  const series=[]; let v = Math.max(3, base - 15 - rnd()*15);
+  for(let d=0; d<30; d++){ v += (base - v)*0.08 + (rnd()-0.5)*5; series.push(Math.max(0,Math.min(100,v))); }
+  const score = Math.round(series[29]);
+  const lv = level(score);
+  const topIdx = f.indexOf(Math.max(...f));
+  employees.push({
+    id: "EMP-" + (1000 + Math.floor(rnd()*9000)), team, role, score, level: lv, factors: f,
+    top: FACTORS[topIdx], series, sessions: Math.round(20 + rnd()*180),
+    status: lv==="Critical" ? pick(["New","Reviewing","Escalated"]) : lv==="High" ? pick(["New","Reviewing"]) : lv==="Medium" ? pick(["New","Cleared"]) : "Cleared",
+    notes: ""
+  });
+}
+
+function evidenceFor(e){
+  const own = MODULES[e.team], other = MODULES[pick(TEAMS.filter(t=>t!==e.team))];
+  const items = [];
+  const [cov, std, oos, drift, time] = e.factors;
+  if(cov>45) items.push(["Codebase coverage", `AI responses over the window described ${Math.round(cov*0.8)}% of the ${e.team} repository in detail.`]);
+  if(std>45) items.push(["Standalone detail", `${Math.round(std/10)} sessions produced self-contained descriptions with few references back to repository files.`]);
+  if(oos>45) items.push(["Out-of-scope activity", `Sessions focused on ${other[0]} and ${other[1]}, outside the assigned ${own[0]} area.`]);
+  if(drift>45) items.push(["Drift from baseline", `Detailed-summary activity is ${(1+drift/25).toFixed(1)}× this person's 90-day average.`]);
+  if(time>55) items.push(["Timing context", "Activity increased after an HR context flag (demo signal)."]);
+  if(!items.length) items.push(["No notable signals", "Activity matches role norms and this person's own history."]);
+  return items;
+}
+
+// ---------- render ----------
+const color = {Critical:"var(--crit)",High:"var(--high)",Medium:"var(--med)",Low:"var(--low)"};
+let sortKey="score", sortDir=-1, selected=null, showAll=false;
+
+function kpis(){
+  const open = employees.filter(e=>e.status!=="Cleared").length;
+  const crit = employees.filter(e=>e.level==="Critical").length;
+  const high = employees.filter(e=>e.level==="High").length;
+  const sess = employees.reduce((a,e)=>a+e.sessions,0);
+  document.getElementById("kpis").innerHTML = [
+    ["Employees monitored", employees.length, "pseudonymous IDs"],
+    ["AI sessions analysed", sess.toLocaleString(), "last 30 days"],
+    ["Open cases", open, "awaiting analyst review"],
+    ["Critical / High", `${crit} / ${high}`, "need attention"]
+  ].map(([l,v,s])=>`<div class="kpi${l.startsWith("Critical")?" crit":""}"><div class="label">${l}</div><div class="value">${v}</div><div class="sub">${s}</div></div>`).join("");
+}
+
+function dist(){
+  const lv = ["Critical","High","Medium","Low"];
+  const max = Math.max(...lv.map(l=>employees.filter(e=>e.level===l).length));
+  document.getElementById("dist").innerHTML = lv.map(l=>{
+    const n = employees.filter(e=>e.level===l).length;
+    return `<div class="row"><span>${l}</span><div class="bar"><span style="width:${n/max*100}%;background:${color[l]}"></span></div><b style="text-align:right">${n}</b></div>`;
+  }).join("");
+}
+
+function trend(){
+  const top = [...employees].sort((a,b)=>b.score-a.score).slice(0,4);
+  const W=700,H=200,pl=34,pr=110,pt=10,pb=24;
+  const x = d=> pl + d*(W-pl-pr)/29, y = v=> pt + (100-v)*(H-pt-pb)/100;
+  let s = "";
+  [0,25,50,75,100].forEach(t=>{ s += `<line x1="${pl}" x2="${W-pr}" y1="${y(t)}" y2="${y(t)}" stroke="var(--line)"/><text x="${pl-6}" y="${y(t)+4}" text-anchor="end" font-size="11" fill="var(--muted)">${t}</text>`; });
+  s += `<text x="${pl}" y="${H-6}" font-size="11" fill="var(--muted)">30 days ago</text><text x="${W-pr}" y="${H-6}" font-size="11" fill="var(--muted)" text-anchor="end">today</text>`;
+  const shades = ["var(--crit)","var(--high)","var(--accent)","var(--med)"];
+  // spread end labels so they never overlap
+  const ly = top.map(e=>y(e.series[29])+4);
+  for(let i=1;i<ly.length;i++) if(ly[i]-ly[i-1]<15) ly[i]=ly[i-1]+15;
+  top.forEach((e,i)=>{
+    const pts = e.series.map((v,d)=>`${x(d).toFixed(1)},${y(v).toFixed(1)}`).join(" ");
+    s += `<polyline points="${pts}" fill="none" stroke="${shades[i]}" stroke-width="2.2" stroke-linejoin="round"/>`;
+    s += `<circle cx="${x(29)}" cy="${y(e.series[29])}" r="3.5" fill="${shades[i]}"/>`;
+    s += `<text x="${W-pr+8}" y="${ly[i]}" font-size="12" fill="${shades[i]}" font-weight="600">${e.id} · ${e.score}</text>`;
+  });
+  document.getElementById("trend").innerHTML = s;
+}
+
+function spark(series){
+  const w=80,h=22, pts = series.map((v,i)=>`${(i*w/29).toFixed(1)},${(h-2 - v*(h-4)/100).toFixed(1)}`).join(" ");
+  return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" aria-hidden="true"><polyline points="${pts}" fill="none" stroke="var(--accent)" stroke-width="1.6"/></svg>`;
+}
+
+function rows(){
+  const q = document.getElementById("q").value.toLowerCase();
+  const lv = document.getElementById("lvl").value, tm = document.getElementById("team").value, st = document.getElementById("st").value;
+  let list = employees.filter(e =>
+    (!q || (e.id+e.team+e.role).toLowerCase().includes(q)) && (!lv || e.level===lv) && (!tm || e.team===tm) && (!st || e.status===st));
+  list.sort((a,b)=> (a[sortKey]>b[sortKey]?1:a[sortKey]<b[sortKey]?-1:0)*sortDir);
+  document.getElementById("count").textContent = `${list.length} of ${employees.length} employees`;
+  const more = document.getElementById("more");
+  more.style.display = list.length > 15 ? "" : "none";
+  more.textContent = showAll ? "Show top 15" : `Show all ${list.length}`;
+  if(!showAll) list = list.slice(0,15);
+  document.getElementById("rows").innerHTML = list.map(e=>`
+    <tr data-id="${e.id}" class="${selected===e.id?'sel':''}">
+      <td><b>${e.id}</b></td><td class="hide-sm">${e.team}</td><td class="hide-sm muted">${e.role}</td>
+      <td class="score" style="color:${color[e.level]}">${e.score}</td>
+      <td><span class="pill ${e.level}">${e.level}</span></td>
+      <td class="hide-sm">${e.top}</td><td class="hide-sm">${spark(e.series)}</td>
+      <td class="status">${e.status}</td></tr>`).join("");
+  document.querySelectorAll("#rows tr").forEach(tr=>tr.onclick=()=>openDetail(tr.dataset.id));
+}
+
+function openDetail(id){
+  const e = employees.find(x=>x.id===id); selected=id; rows();
+  const ev = evidenceFor(e);
+  const d = document.getElementById("detail");
+  d.innerHTML = `
+    <div class="head"><div><h3>${e.id}</h3><div class="muted">${e.role} · ${e.team}</div></div>
+      <button class="close" aria-label="Close" id="cls">✕</button></div>
+    <div class="body">
+      <div style="display:flex;align-items:center;gap:14px">
+        <div class="score" style="font-size:40px;color:${color[e.level]}">${e.score}</div>
+        <div><span class="pill ${e.level}">${e.level} risk</span><div class="muted" style="font-size:12px;margin-top:4px">Status: <b id="stv">${e.status}</b></div></div>
+      </div>
+      <div class="meta">
+        <div><span>AI sessions (30 d)</span>${e.sessions}</div>
+        <div><span>Assigned area</span>${MODULES[e.team][0]}</div>
+      </div>
+      <div><h4>Why this score</h4>${FACTORS.map((f,i)=>`<div class="factor"><span>${f}</span><div class="bar"><span style="width:${e.factors[i]}%"></span></div><b style="text-align:right">${e.factors[i]}</b></div>`).join("")}</div>
+      <div><h4>Risk over 30 days</h4>${bigSpark(e.series)}</div>
+      <div><h4>Evidence</h4><ul class="evidence">${ev.map(([t,s])=>`<li><b>${t}</b>${s}</li>`).join("")}</ul></div>
+      <div><h4>Analyst action</h4>
+        <div class="actions">
+          <button class="btn" data-s="Reviewing">Start review</button>
+          <button class="btn primary" data-s="Escalated">Escalate</button>
+          <button class="btn" data-s="Cleared">Clear as benign</button>
+        </div></div>
+      <div><h4>Case notes</h4><textarea id="nt" placeholder="Add notes for this case">${e.notes}</textarea></div>
+      <div class="privacy">Identity stays pseudonymous until a case is escalated and approved. Scores support human judgement; they are not proof of wrongdoing.</div>
+    </div>`;
+  d.classList.add("open"); d.setAttribute("aria-hidden","false");
+  document.getElementById("cls").onclick = closeDetail;
+  document.getElementById("nt").oninput = ev2 => e.notes = ev2.target.value;
+  d.querySelectorAll("[data-s]").forEach(b=>b.onclick=()=>{ e.status=b.dataset.s; document.getElementById("stv").textContent=e.status; kpis(); rows(); });
+}
+function closeDetail(){ const d=document.getElementById("detail"); d.classList.remove("open"); d.setAttribute("aria-hidden","true"); selected=null; rows(); }
+
+function bigSpark(series){
+  const w=460,h=90;
+  const pts = series.map((v,i)=>`${(i*w/29).toFixed(1)},${(h-4 - v*(h-8)/100).toFixed(1)}`).join(" ");
+  const th = h-4 - 60*(h-8)/100;
+  return `<svg viewBox="0 0 ${w} ${h}" width="100%" height="${h}" role="img" aria-label="Risk over 30 days">
+    <line x1="0" x2="${w}" y1="${th}" y2="${th}" stroke="var(--high)" stroke-dasharray="4 4"/>
+    <text x="${w}" y="${th-4}" font-size="11" text-anchor="end" fill="var(--muted)">alert threshold 60</text>
+    <polyline points="${pts}" fill="none" stroke="var(--accent)" stroke-width="2.2"/></svg>`;
+}
+
+// ---------- wire up ----------
+document.getElementById("team").innerHTML += TEAMS.map(t=>`<option>${t}</option>`).join("");
+["q","lvl","team","st"].forEach(id=>document.getElementById(id).addEventListener("input",rows));
+document.querySelectorAll("th[data-k]").forEach(th=>th.onclick=()=>{ const k=th.dataset.k; sortDir = sortKey===k? -sortDir : (k==="score"?-1:1); sortKey=k; rows(); });
+const tbtn=document.getElementById("theme");
+function setTheme(t){ document.documentElement.dataset.theme=t; tbtn.textContent = t==="dark" ? "☀ Light" : "◐ Dark"; try{localStorage.setItem("popat-theme",t);}catch(e){} trend(); }
+tbtn.onclick=()=>setTheme(document.documentElement.dataset.theme==="dark"?"light":"dark");
+try{ const t=localStorage.getItem("popat-theme"); if(t) document.documentElement.dataset.theme=t; }catch(e){}
+document.getElementById("more").onclick=()=>{ showAll=!showAll; rows(); };
+document.addEventListener("keydown",e=>{ if(e.key==="Escape") closeDetail(); });
+kpis(); dist(); setTheme(document.documentElement.dataset.theme || "light"); rows();
+</script>
+</body>
+</html>
